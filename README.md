@@ -149,7 +149,7 @@ Total of 11 Security Hotspots identified with varying priority levels:
 - Sends colorized notifications based on build status
 - Includes build number, job name, and status
 
-![image](https://github.com/user-attachments/assets/c5ff71b7-e65e-4963-bb10-90666cbc8c6e)
+![image](https://github.com/user-attachments/assets/a808c968-2a2c-4a21-995f-3d59de988c85)
 
 ## Credential Management
 - SonarQube token stored securely in Jenkins credentials
