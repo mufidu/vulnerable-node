@@ -1,106 +1,120 @@
-Vulnerable Node
-===============
+# CI/CD Pipeline with Jenkins and SonarQube Integration
 
-![Logo](https://raw.githubusercontent.com/cr0hn/vulnerable-node/master/images/logo-small.png)
+This repository implements a Continuous Integration/Continuous Deployment (CI/CD) pipeline with Static Application Security Testing (SAST) using Jenkins and SonarQube. The pipeline is designed to analyze and deploy a purposefully vulnerable Node.js application to demonstrate security scanning capabilities.
 
-*Vulnerable Node: A very vulnerable web site written in NodeJS*
+## Infrastructure Setup
 
-Codename | PsEA
--------- | ----
-Version | 1.0
-Code | https://github.com/cr0hn/vulnerable-node
-Issues | https://github.com/cr0hn/vulnerable-node/issues/
-Author | Daniel Garcia (cr0hn) - @ggdaniel
+### Docker Compose Configuration
+The infrastructure is set up using Docker Compose, with two main services:
 
-# Support this project
+1. **Jenkins**
+   - Uses the `jenkins/jenkins:lts` image
+   - Exposed ports: 8080 (web interface), 50000 (agent connection)
+   - Configured with Docker-in-Docker capability
+   - Persistent data in `jenkins_home` volume
 
-Support this project (to solve issues, new features...) by applying the Github "Sponsor" button.
+2. **SonarQube**
+   - Uses the `sonarqube:lts` image
+   - Exposed port: 9000
+   - Configured with elasticsearch bootstrap checks disabled
+   - Persistent volumes for data, extensions, and logs
 
-# What's this project?
+### Network Configuration
+- All services run on a custom bridge network named `cicd-network`
+- ngrok is used as a proxy to enable GitHub webhook integration
 
-The goal of this project is to be a project with really vulnerable code in NodeJS, not simulated.
+## Pipeline Features
 
-## Why?
+### Build Parameters
+The pipeline supports three build types:
+1. **Scan Only**: Runs SonarQube analysis without deployment
+2. **Scan + Deploy**: Performs both security scanning and deployment
+3. **Deploy Only**: Skips security scanning and only performs deployment
 
-Similar project, like OWASP Node Goat, are pretty and useful for learning process but not for a real researcher or studding vulnerabilities in source code, because their code is not really vulnerable but simulated.
+### Pipeline Stages
 
-This project was created with the **purpose of have a project with identified vulnerabilities in source code with the finality of can measure the quality of security analyzers tools**.
+1. **Checkout**
+   - Retrieves code from SCM
 
-Although not its main objective, this project also can be useful for:
+2. **SonarQube Analysis**
+   - Runs when build type is 'Scan Only' or 'Scan + Deploy'
+   - Performs static code analysis
+   - Configures exclusions and coverage report paths
 
-- Pentesting training.
-- Teaching: learn how NOT programming in NodeJS.
+3. **Quality Gate**
+   - Waits for SonarQube quality gate results
+   - Aborts pipeline if quality checks fail
+   - 5-minute timeout configuration
 
-The purpose of project is to provide a real app to test the quality of security source code analyzers in white box processing.
+4. **Build Application**
+   - Builds Docker image for the application
+   - Tags images with build number and 'latest'
 
-## How?
+5. **Run Application**
+   - Run application container
+   - Exposes application on port 8081 (8080 is used by Jenkins)
 
-This project simulates a real (and very little) shop site that has identifiable sources points of common vulnerabilities.
+## Security Analysis Results
 
-## Installation
+### Quality Gate Status
+The most recent SonarQube Quality Gate status is 'Failed', as expected due to the vulnerabilities in the application.
 
-The most simple way to run the project is using docker-compose, doing this:
+### Security Findings
+Total of 11 Security Hotspots identified with varying priority levels:
 
-```bash
+#### High Priority
+- **Authentication Issues** (2 findings)
 
-# git clone https://github.com/cr0hn/vulnerable-node.git vulnerable-node
-# cd vulnerable-node/
-# docker-compose build && docker-compose up
-Building postgres_db
-Step 1 : FROM library/postgres
----> 247a11721cbd
-Step 2 : MAINTAINER "Daniel Garcia aka (cr0hn)" <cr0hn@cr0hn.com>
----> Using cache
----> d67c05e9e2d5
-Step 3 : ADD init.sql /docker-entrypoint-initdb.d/
-....
-```
+#### Medium Priority
+- **Denial of Service (DoS)** (1 finding)
+- **Weak Cryptography** (6 findings)
 
-## Running
+#### Low Priority
+- **Insecure Configuration** (1 finding)
+- **Others** (1 finding)
 
-Once docker compose was finished, we can open a browser and type the URL: `127.0.0.1:3000` (or the IP where you deployed the project):
+### Additional Metrics
+- **Code Smells**: 257
+- **Technical Debt**: 3d 3h
+- **Reliability**: A
+- **Security**: A
+- **Maintainability**: A
 
-![Login screen](https://raw.githubusercontent.com/cr0hn/vulnerable-node/master/images/login.jpg)
+### Notifications
+- Integrated with Discord webhook for build notifications
+- Sends colorized notifications based on build status
+- Includes build number, job name, and status
 
-To access to website you can use displayed in landing page:
+## Applied Security Measures in Jenkins
 
-- admin : admin
-- roberto : asdfpiuw981
+1. **Credential Management**
+   - SonarQube token stored securely in Jenkins credentials
+   - Environment variables used for sensitive data
 
-Here some images of site:
+## Prerequisites
 
-![home screen](https://raw.githubusercontent.com/cr0hn/vulnerable-node/master/images/home.jpg)
+- Docker and Docker Compose
+- Jenkins with following plugins:
+  - NodeJS Plugin
+  - SonarQube Scanner
+  - Docker Pipeline
+- ngrok for webhook integration
+- Discord webhook URL for notifications
 
-![shopping](https://raw.githubusercontent.com/cr0hn/vulnerable-node/master/images/shop.jpg)
+## Getting Started
 
-![purchased products](https://raw.githubusercontent.com/cr0hn/vulnerable-node/master/images/purchased.jpg)
+1. Clone the repository
+2. Navigate to `.ci-cd` directory
+3. Run `docker-compose up -d`
+4. Access Jenkins at `http://localhost:8080`
+5. Access SonarQube at `http://localhost:9000`
+6. Configure Jenkins credentials and SonarQube token
+7. Set up webhook in GitHub repository
 
-# Vulnerabilities
+## Notes
 
-## Vulnerability list:
-
-This project has the most common vulnerabilities of `OWASP Top 10 <https://www.owasp.org/index.php/Top_10_2013-Top_10>`:
-
-- A1  - Injection
-- A2  - Broken Authentication and Session Management
-- A3  - Cross-Site Scripting (XSS)
-- A4  - Insecure Direct Object References
-- A5  - Security Misconfiguration
-- A6  - Sensitive Data Exposure
-- A8  - Cross-Site Request Forgery (CSRF)
-- A10 - Unvalidated Redirects and Forwards
-
-## Vulnerability code location
-
-The exactly code location of each vulnerability is pending to write
-
-# References
-
-I took ideas and how to explode it in NodeJS using these references:
-
-- https://blog.risingstack.com/node-js-security-checklist/
-- https://github.com/substack/safe-regex
-
-# License
-
-This project is released under license BSD.
+- The pipeline includes proper cleanup procedures in post-build actions
+- There are 3 build parameters: 'Scan Only', 'Scan + Deploy', and 'Deploy Only'
+    - 'Scan Only': Only runs SonarQube analysis (no build or run)
+    - 'Scan + Deploy': Runs SonarQube analysis, builds Docker image, and runs application
+    - 'Deploy Only': Skips SonarQube analysis and only builds and runs application
