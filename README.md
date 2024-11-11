@@ -23,15 +23,34 @@ The infrastructure is set up using Docker Compose, with two main services:
 - All services run on a custom bridge network named `cicd-network`
 - ngrok is used as a proxy to enable GitHub webhook integration
 
-### SonarQube configuration in Jenkins
+### SonarQube Configuration
 
-- Server
+- Create a new project in SonarQube named `jenkins`.
+
+### Jenkins Configuration
+
+- Install required plugins:
+  - NodeJS Plugin
+  - SonarQube Scanner
+  - Docker Pipeline
+  - Generic Webhook Trigger
+- Configure SonarQube Server
 ![image](https://github.com/user-attachments/assets/2c20e5fe-723b-4d60-b8cf-b3bce3bcef5b)
-
-- Scanner
+- Configure SonarQube Scanner
 ![image](https://github.com/user-attachments/assets/a90f00c7-adb2-47c5-a0d7-6711ec949538)
+- Install Docker client and Docker compose in Jenkins container
+```bash
+docker exec -it jenkins sh
 
-Create a new project in SonarQube named `jenkins`.
+# Install Docker client
+curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz \
+  && tar xzvf docker-17.04.0-ce.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -r docker docker-17.04.0-ce.tgz
+
+# Install Docker Compose
+curl -SL https://github.com/docker/compose/releases/download/v2.30.3/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+```
 
 ## Pipeline Features
 
@@ -119,11 +138,7 @@ Total of 11 Security Hotspots identified with varying priority levels:
 ## Prerequisites
 
 - Docker and Docker Compose
-- Jenkins with following plugins:
-  - NodeJS Plugin
-  - SonarQube Scanner
-  - Docker Pipeline
-  - Generic Webhook Trigger
+- Jenkins
 - ngrok for webhook integration
 - Discord webhook URL for notifications
 
