@@ -4,7 +4,7 @@ This repository implements a Continuous Integration/Continuous Deployment (CI/CD
 
 ## Explanation Video
 
-https://github.com/user-attachments/assets/657dc812-d532-42f3-b497-75231ca370e0
+[![](https://img.youtube.com/vi/_zi-UQVLWKY/0.jpg)](https://youtu.be/_zi-UQVLWKY)
 
 ## Prerequisites
 
