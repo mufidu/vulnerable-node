@@ -84,7 +84,8 @@ pipeline {
                     // Run Docker container
                     sh """
                         docker rm -f vulnerable-app || true
-                        docker run -d -p 8081:8081 --name vulnerable-app vulnerable-app:latest
+                        docker rm -f postgres_db || true
+                        docker-compose up -d
                     """
                 }
             }
