@@ -15,7 +15,7 @@ pipeline {
     parameters {
         choice(
             name: 'BUILD_TYPE',
-            choices: ['Scan Only', 'Scan + Deploy'],
+            choices: ['Scan Only', 'Scan + Deploy', 'Deploy Only'],
             description: 'Select the type of build to execute'
         )
     }
@@ -28,6 +28,9 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            when {
+                expression { params.BUILD_TYPE == 'Scan Only' || params.BUILD_TYPE == 'Scan + Deploy' }
+            }
             steps {
                 withSonarQubeEnv('sonar') {
                     script {
@@ -47,6 +50,9 @@ pipeline {
         }
 
         stage('Quality Gate') {
+            when {
+                expression { params.BUILD_TYPE == 'Scan Only' || params.BUILD_TYPE == 'Scan + Deploy' }
+            }
             steps {
                 timeout(time: 50, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
@@ -56,7 +62,7 @@ pipeline {
 
         stage('Build Application') {
             when {
-                expression { params.BUILD_TYPE == 'Scan + Deploy' }
+                expression { params.BUILD_TYPE == 'Scan + Deploy' || params.BUILD_TYPE == 'Deploy Only' }
             }
             steps {
                 script {
@@ -64,6 +70,20 @@ pipeline {
                     sh """
                         docker build -t vulnerable-app:${BUILD_NUMBER} .
                         docker tag vulnerable-app:${BUILD_NUMBER} vulnerable-app:latest
+                    """
+                }
+            }
+        }
+
+        stage('Run Application') {
+            when {
+                expression { params.BUILD_TYPE == 'Scan + Deploy' || params.BUILD_TYPE == 'Deploy Only' }
+            }
+            steps {
+                script {
+                    // Run Docker container
+                    sh """
+                        docker run -d -p 8080:8080 --name vulnerable-app vulnerable-app:latest
                     """
                 }
             }

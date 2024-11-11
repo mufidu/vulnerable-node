@@ -20,6 +20,8 @@ services:
     jenkins:
         image: jenkins/jenkins:lts
         container_name: jenkins
+        environment:
+            - TZ=Asia/Jakarta
         privileged: true
         user: root
         ports:
