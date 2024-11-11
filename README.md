@@ -18,10 +18,20 @@ The infrastructure is set up using Docker Compose, with two main services:
    - Exposed port: 9000
    - Configured with elasticsearch bootstrap checks disabled
    - Persistent volumes for data, extensions, and logs
-
+  
 ### Network Configuration
 - All services run on a custom bridge network named `cicd-network`
 - ngrok is used as a proxy to enable GitHub webhook integration
+
+### SonarQube configuration in Jenkins
+
+- Server
+![image](https://github.com/user-attachments/assets/2c20e5fe-723b-4d60-b8cf-b3bce3bcef5b)
+
+- Scanner
+![image](https://github.com/user-attachments/assets/a90f00c7-adb2-47c5-a0d7-6711ec949538)
+
+Create a new project in SonarQube named `jenkins`.
 
 ## Pipeline Features
 
@@ -54,7 +64,22 @@ The pipeline supports three build types:
    - Run application container
    - Exposes application on port 8081 (8080 is used by Jenkins)
 
+### Notes
+
+There are 3 build parameters: 'Scan Only', 'Scan + Deploy', and 'Deploy Only'
+   - 'Scan Only': Only runs SonarQube analysis (no build or run)
+   - 'Scan + Deploy': Runs SonarQube analysis, builds Docker image, and runs application
+   - 'Deploy Only': Skips SonarQube analysis and only builds and runs application
+
+Example:
+
+![image](https://github.com/user-attachments/assets/3b9fe8b7-4e9f-45e1-af77-cb1d33fd2c0d)
+
+Build `#22` uses 'Scan + Deploy' while Build `#21` uses 'Deploy Only'.
+
 ## Security Analysis Results
+
+![image](https://github.com/user-attachments/assets/3054aca8-4082-4c54-a300-337d63ab0e0d)
 
 ### Quality Gate Status
 The most recent SonarQube Quality Gate status is 'Failed', as expected due to the vulnerabilities in the application.
@@ -80,16 +105,16 @@ Total of 11 Security Hotspots identified with varying priority levels:
 - **Security**: A
 - **Maintainability**: A
 
-### Notifications
+## Notifications
 - Integrated with Discord webhook for build notifications
 - Sends colorized notifications based on build status
 - Includes build number, job name, and status
 
-## Applied Security Measures in Jenkins
+![image](https://github.com/user-attachments/assets/c5ff71b7-e65e-4963-bb10-90666cbc8c6e)
 
-1. **Credential Management**
-   - SonarQube token stored securely in Jenkins credentials
-   - Environment variables used for sensitive data
+## Credential Management
+- SonarQube token stored securely in Jenkins credentials
+- Environment variables used for sensitive data
 
 ## Prerequisites
 
@@ -98,6 +123,7 @@ Total of 11 Security Hotspots identified with varying priority levels:
   - NodeJS Plugin
   - SonarQube Scanner
   - Docker Pipeline
+  - Generic Webhook Trigger
 - ngrok for webhook integration
 - Discord webhook URL for notifications
 
@@ -110,11 +136,3 @@ Total of 11 Security Hotspots identified with varying priority levels:
 5. Access SonarQube at `http://localhost:9000`
 6. Configure Jenkins credentials and SonarQube token
 7. Set up webhook in GitHub repository
-
-## Notes
-
-- The pipeline includes proper cleanup procedures in post-build actions
-- There are 3 build parameters: 'Scan Only', 'Scan + Deploy', and 'Deploy Only'
-    - 'Scan Only': Only runs SonarQube analysis (no build or run)
-    - 'Scan + Deploy': Runs SonarQube analysis, builds Docker image, and runs application
-    - 'Deploy Only': Skips SonarQube analysis and only builds and runs application
