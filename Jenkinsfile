@@ -6,6 +6,11 @@ pipeline {
         SONAR_TOKEN = credentials('sonar-token')
     }
 
+    tools {
+        nodejs 'nodejs'
+        'hudson.plugins.sonar.SonarRunnerInstallation' 'sonar-scanner'
+    }
+
     // Parameters for build type selection
     parameters {
         choice(
@@ -25,22 +30,25 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
-                    sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=jenkins \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.login=$SONAR_TOKEN \
-                        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                        -Dsonar.exclusions=**/scanner/**
-                    """
+                    script {
+                        def scannerHome = tool 'sonar-scanner'
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=jenkins \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://sonarqube:9000 \
+                            -Dsonar.login=${SONAR_TOKEN} \
+                            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                            -Dsonar.exclusions=**/scanner/**
+                        """
+                    }
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
+                timeout(time: 50, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -67,40 +75,39 @@ pipeline {
             // Clean workspace
             cleanWs()
             script {
-                // Send build status to Discord
                 def status = currentBuild.result ?: 'SUCCESS'
-                def color = status == 'SUCCESS' ? 'good' : 'danger'
-                def message = status == 'SUCCESS' ? 'Build successful' : 'Build failed'
-
+                def color = status == 'SUCCESS' ? 3066993 : 15158332 // Green or Red
+                def webhookUrl = 'https://discord.com/api/webhooks/1305384533952036956/h8LYGW3Uekkbfg9HPlIEbQJQ_GbTJkLcbuwnR5JOoBWkbd9zpiGZo5LedUaJV22ZD-vZ'
+                
+                // Create proper Discord webhook payload
                 def payload = """
                     {
-                        "username": "Jenkins",
-                        "attachments": [
-                            {
-                                "color": "${color}",
-                                "title": "${message}",
-                                "fields": [
-                                    {
-                                        "title": "Build Number",
-                                        "value": "${BUILD_NUMBER}",
-                                        "short": true
-                                    },
-                                    {
-                                        "title": "Status",
-                                        "value": "${status}",
-                                        "short": true
-                                    }
-                                ]
-                            }
-                        ]
+                        "embeds": [{
+                            "title": "Build Status",
+                            "description": "Build #${BUILD_NUMBER}",
+                            "color": ${color},
+                            "fields": [
+                                {
+                                    "name": "Status",
+                                    "value": "${status}",
+                                    "inline": true
+                                },
+                                {
+                                    "name": "Job",
+                                    "value": "${JOB_NAME}",
+                                    "inline": true
+                                }
+                            ]
+                        }]
                     }
                 """
-
+                
+                // Send webhook using curl
                 sh """
                     curl -X POST \
-                    -H 'Content-Type: application/json' \
-                    -d '${payload}' \
-                    https://discord.com/api/webhooks/1183663200525369434/h_erLvcDtuD_FDrKlttESq5UYKkLv3VayO1ka6J4h79HkV-t3MGti-yAfRJIEk39DeNV
+                        -H 'Content-Type: application/json' \
+                        -d '${payload.replaceAll("'", "'\\''").trim()}' \
+                        ${webhookUrl}
                 """
             }
         }
