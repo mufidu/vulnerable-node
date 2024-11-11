@@ -1,6 +1,23 @@
 # CI/CD Pipeline with Jenkins and SonarQube Integration
 
-This repository implements a Continuous Integration/Continuous Deployment (CI/CD) pipeline with Static Application Security Testing (SAST) using Jenkins and SonarQube. The pipeline is designed to analyze and deploy a purposefully vulnerable Node.js application to demonstrate security scanning capabilities.
+This repository implements a Continuous Integration/Continuous Deployment (CI/CD) pipeline with Static Application Security Testing (SAST) using Jenkins and SonarQube. The pipeline is designed to analyze and deploy a purposefully vulnerable Node.js application forked from [cr0hn](https://github.com/cr0hn/vulnerable-node) to demonstrate security scanning capabilities.
+
+## Prerequisites
+
+- Docker and Docker Compose
+- Jenkins
+- ngrok for webhook integration
+- Discord webhook URL for notifications
+
+## Getting Started
+
+1. Clone the repository
+2. Navigate to `.ci-cd` directory
+3. Run `docker-compose up -d`
+4. Access Jenkins at `http://localhost:8080`
+5. Access SonarQube at `http://localhost:9000`
+6. Configure Jenkins credentials and SonarQube token
+7. Set up webhook in GitHub repository
 
 ## Infrastructure Setup
 
@@ -50,6 +67,9 @@ curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz \
 
 # Install Docker Compose
 curl -SL https://github.com/docker/compose/releases/download/v2.30.3/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+
+# Make binaries executable
+chmod +x /usr/local/bin/docker-compose
 ```
 
 ## Pipeline Features
@@ -134,20 +154,3 @@ Total of 11 Security Hotspots identified with varying priority levels:
 ## Credential Management
 - SonarQube token stored securely in Jenkins credentials
 - Environment variables used for sensitive data
-
-## Prerequisites
-
-- Docker and Docker Compose
-- Jenkins
-- ngrok for webhook integration
-- Discord webhook URL for notifications
-
-## Getting Started
-
-1. Clone the repository
-2. Navigate to `.ci-cd` directory
-3. Run `docker-compose up -d`
-4. Access Jenkins at `http://localhost:8080`
-5. Access SonarQube at `http://localhost:9000`
-6. Configure Jenkins credentials and SonarQube token
-7. Set up webhook in GitHub repository
