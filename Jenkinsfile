@@ -83,7 +83,7 @@ pipeline {
                 script {
                     // Run Docker container
                     sh """
-                        docker run -d -p 8080:8080 --name vulnerable-app vulnerable-app:latest
+                        docker run -d -p 8081:8081 --name vulnerable-app vulnerable-app:latest
                     """
                 }
             }
