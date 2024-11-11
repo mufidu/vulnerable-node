@@ -54,7 +54,7 @@ pipeline {
                 expression { params.BUILD_TYPE == 'Scan Only' || params.BUILD_TYPE == 'Scan + Deploy' }
             }
             steps {
-                timeout(time: 50, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -83,6 +83,7 @@ pipeline {
                 script {
                     // Run Docker container
                     sh """
+                        docker rm -f vulnerable-app || true
                         docker run -d -p 8081:8081 --name vulnerable-app vulnerable-app:latest
                     """
                 }
