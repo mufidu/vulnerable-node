@@ -2,6 +2,10 @@
 
 This repository implements a Continuous Integration/Continuous Deployment (CI/CD) pipeline with Static Application Security Testing (SAST) using Jenkins and SonarQube. The pipeline is designed to analyze and deploy a purposefully vulnerable Node.js application forked from [cr0hn](https://github.com/cr0hn/vulnerable-node) to demonstrate security scanning capabilities.
 
+## Explanation Video
+
+https://github.com/user-attachments/assets/657dc812-d532-42f3-b497-75231ca370e0
+
 ## Prerequisites
 
 - Docker and Docker Compose
